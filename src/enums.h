@@ -89,8 +89,14 @@ enum itemAttrTypes : uint32_t {
 	ITEM_ATTRIBUTE_CHARGES = 1 << 20,
 	ITEM_ATTRIBUTE_FLUIDTYPE = 1 << 21,
 	ITEM_ATTRIBUTE_DOORID = 1 << 22,
+	ITEM_ATTRIBUTE_DECAY_TIMESTAMP = 1 << 23,
 
 	ITEM_ATTRIBUTE_CUSTOM = 1U << 31
+};
+
+enum ItemDecayType_t : uint8_t {
+	DECAY_TYPE_NORMAL = 0,
+	DECAY_TYPE_TIMESTAMP = 1,
 };
 
 enum VipStatus_t : uint8_t {
