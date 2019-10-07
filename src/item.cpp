@@ -182,9 +182,7 @@ Item* Item::clone() const
 	if (attributes) {
 		item->attributes.reset(new ItemAttributes(*attributes));
 		if (item->getDurationLeft() > 0) {
-			item->incrementReferenceCounter();
-			item->setDecaying(DECAYING_TRUE);
-			g_game.toDecayItems.push_front(item);
+			g_game.startDecay(item);
 		}
 	}
 	return item;
@@ -266,8 +264,10 @@ void Item::setID(uint16_t newid)
 
 	if (it.decayType == DECAY_TYPE_NORMAL) {
 		if (newDuration > 0 && (!prevIt.stopTime || !hasAttribute(ITEM_ATTRIBUTE_DURATION))) {
-			setDecaying(DECAYING_FALSE);
+			g_game.stopDecay(this);
 			setDuration(newDuration);
+		} else if (!canDecay()) {
+			g_game.stopDecay(this);
 		}
 	}
 }
@@ -461,18 +461,6 @@ Attr_ReadValue Item::readAttr(AttrTypes_t attr, PropStream& propStream)
 			}
 
 			setDuration(std::max<int32_t>(0, duration));
-			break;
-		}
-
-		case ATTR_DECAYING_STATE: {
-			uint8_t state;
-			if (!propStream.read<uint8_t>(state)) {
-				return ATTR_READ_ERROR;
-			}
-
-			if (state != DECAYING_FALSE) {
-				setDecaying(DECAYING_PENDING);
-			}
 			break;
 		}
 
@@ -730,15 +718,13 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 		propWriteStream.writeString(specialDesc);
 	}
 
+	if (items[id].decayType == DECAY_TYPE_TIMESTAMP && hasAttribute(ITEM_ATTRIBUTE_DECAY_TIMESTAMP)) {
+		propWriteStream.write<uint8_t>(ATTR_DECAY_TIMESTAMP);
+		propWriteStream.write<int64_t>(getInt64Attr(ITEM_ATTRIBUTE_DECAY_TIMESTAMP));
+	}
 	if (hasAttribute(ITEM_ATTRIBUTE_DURATION)) {
 		propWriteStream.write<uint8_t>(ATTR_DURATION);
-		propWriteStream.write<uint32_t>(getIntAttr(ITEM_ATTRIBUTE_DURATION));
-	}
-
-	ItemDecayState_t decayState = getDecaying();
-	if (decayState == DECAYING_TRUE || decayState == DECAYING_PENDING) {
-		propWriteStream.write<uint8_t>(ATTR_DECAYING_STATE);
-		propWriteStream.write<uint8_t>(decayState);
+		propWriteStream.write<uint32_t>(getDurationLeft());
 	}
 
 	if (hasAttribute(ITEM_ATTRIBUTE_NAME)) {
@@ -789,11 +775,6 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 	if (hasAttribute(ITEM_ATTRIBUTE_SHOOTRANGE)) {
 		propWriteStream.write<uint8_t>(ATTR_SHOOTRANGE);
 		propWriteStream.write<uint8_t>(getIntAttr(ITEM_ATTRIBUTE_SHOOTRANGE));
-	}
-
-	if (hasAttribute(ITEM_ATTRIBUTE_DECAY_TIMESTAMP)) {
-		propWriteStream.write<uint8_t>(ATTR_DECAY_TIMESTAMP);
-		propWriteStream.write<int64_t>(getInt64Attr(ITEM_ATTRIBUTE_DECAY_TIMESTAMP));
 	}
 
 	if (hasAttribute(ITEM_ATTRIBUTE_CUSTOM)) {

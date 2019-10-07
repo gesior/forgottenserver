@@ -753,6 +753,11 @@ class Item : virtual public Thing
 			return getIntAttr(ITEM_ATTRIBUTE_CORPSEOWNER);
 		}
 
+		ItemDecayType_t getDecayType()
+		{
+			return items[id].decayType;
+		}
+
 		void setDuration(int32_t time) {
 			setIntAttr(ITEM_ATTRIBUTE_DURATION, time);
 		}
@@ -771,7 +776,7 @@ class Item : virtual public Thing
 				return 0;
 			}
 
-			if (items[id].decayType == DECAY_TYPE_TIMESTAMP) {
+			if (hasAttribute(ITEM_ATTRIBUTE_DECAY_TIMESTAMP)) {
 				if (getInt64Attr(ITEM_ATTRIBUTE_DECAY_TIMESTAMP) > OTSYS_TIME()) {
 					return getInt64Attr(ITEM_ATTRIBUTE_DECAY_TIMESTAMP) - OTSYS_TIME();
 				} else {
@@ -784,12 +789,6 @@ class Item : virtual public Thing
 
 		void setDecaying(ItemDecayState_t decayState) {
 			setIntAttr(ITEM_ATTRIBUTE_DECAYSTATE, decayState);
-		}
-		ItemDecayState_t getDecaying() const {
-			if (!attributes) {
-				return DECAYING_FALSE;
-			}
-			return static_cast<ItemDecayState_t>(getIntAttr(ITEM_ATTRIBUTE_DECAYSTATE));
 		}
 
 		void setDecayTimestamp(int64_t timestamp) {

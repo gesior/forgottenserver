@@ -452,6 +452,7 @@ class Game
 		static void addDistanceEffect(const SpectatorHashSet& spectators, const Position& fromPos, const Position& toPos, uint8_t effect);
 
 		void startDecay(Item* item);
+		void stopDecay(Item* item);
 		int32_t getLightHour() const {
 			return lightHour;
 		}
@@ -504,8 +505,6 @@ class Game
 		Raids raids;
 		Quests quests;
 
-		std::forward_list<Item*> toDecayItems;
-
 	private:
 		bool playerSaySpell(Player* player, SpeakClasses type, const std::string& text);
 		void playerWhisper(Player* player, const std::string& text);
@@ -522,6 +521,8 @@ class Game
 		std::unordered_map<uint16_t, Item*> uniqueItems;
 		std::map<uint32_t, uint32_t> stages;
 
+		std::map<int64_t, std::map<Item *, Item *>> decayMap;
+		std::map<Item *, int64_t> reverseItemDecayMap;
 		std::list<Item*> decayItems[EVENT_DECAY_BUCKETS];
 		std::list<Creature*> checkCreatureLists[EVENT_CREATURECOUNT];
 
