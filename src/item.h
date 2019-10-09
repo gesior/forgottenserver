@@ -62,12 +62,6 @@ enum TradeEvents_t {
 	ON_TRADE_CANCEL,
 };
 
-enum ItemDecayState_t : uint8_t {
-	DECAYING_FALSE = 0,
-	DECAYING_TRUE,
-	DECAYING_PENDING,
-};
-
 enum AttrTypes_t {
 	//ATTR_DESCRIPTION = 1,
 	//ATTR_EXT_FILE = 2,
@@ -85,7 +79,7 @@ enum AttrTypes_t {
 	ATTR_HOUSEDOORID = 14,
 	ATTR_COUNT = 15,
 	ATTR_DURATION = 16,
-	ATTR_DECAYING_STATE = 17,
+	//ATTR_DECAYING_STATE = 17,
 	ATTR_WRITTENDATE = 18,
 	ATTR_WRITTENBY = 19,
 	ATTR_SLEEPERGUID = 20,
@@ -199,18 +193,8 @@ class ItemAttributes
 		void setDuration(int32_t time) {
 			setIntAttr(ITEM_ATTRIBUTE_DURATION, time);
 		}
-		void decreaseDuration(int32_t time) {
-			increaseIntAttr(ITEM_ATTRIBUTE_DURATION, -time);
-		}
 		uint32_t getDuration() const {
 			return getIntAttr(ITEM_ATTRIBUTE_DURATION);
-		}
-
-		void setDecaying(ItemDecayState_t decayState) {
-			setIntAttr(ITEM_ATTRIBUTE_DECAYSTATE, decayState);
-		}
-		ItemDecayState_t getDecaying() const {
-			return static_cast<ItemDecayState_t>(getIntAttr(ITEM_ATTRIBUTE_DECAYSTATE));
 		}
 
 		void setDecayTimestamp(int64_t timestamp) {
@@ -761,9 +745,6 @@ class Item : virtual public Thing
 		void setDuration(int32_t time) {
 			setIntAttr(ITEM_ATTRIBUTE_DURATION, time);
 		}
-		void decreaseDuration(int32_t time) {
-			increaseIntAttr(ITEM_ATTRIBUTE_DURATION, -time);
-		}
 		uint32_t getDuration() const {
 			if (!attributes) {
 				return 0;
@@ -786,9 +767,12 @@ class Item : virtual public Thing
 				return getIntAttr(ITEM_ATTRIBUTE_DURATION);
 			}
 		}
-
-		void setDecaying(ItemDecayState_t decayState) {
-			setIntAttr(ITEM_ATTRIBUTE_DECAYSTATE, decayState);
+		void setDurationLeft(int32_t duration) {
+			if (items[id].decayType == DECAY_TYPE_NORMAL) {
+				setIntAttr(ITEM_ATTRIBUTE_DURATION, duration);
+			} else {
+				setInt64Attr(ITEM_ATTRIBUTE_DECAY_TIMESTAMP, OTSYS_TIME() + duration);
+			}
 		}
 
 		void setDecayTimestamp(int64_t timestamp) {
@@ -1025,9 +1009,7 @@ class Item : virtual public Thing
 		Cylinder* getParent() const override {
 			return parent;
 		}
-		void setParent(Cylinder* cylinder) override {
-			parent = cylinder;
-		}
+		void setParent(Cylinder* cylinder) override;
 		Cylinder* getTopParent();
 		const Cylinder* getTopParent() const;
 		Tile* getTile() override;

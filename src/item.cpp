@@ -256,8 +256,9 @@ void Item::setID(uint16_t newid)
 	uint32_t newDuration = it.decayTime * 1000;
 
 	if (newDuration == 0 && !it.stopTime && it.decayTo < 0) {
-		removeAttribute(ITEM_ATTRIBUTE_DECAYSTATE);
 		removeAttribute(ITEM_ATTRIBUTE_DURATION);
+		removeAttribute(ITEM_ATTRIBUTE_DECAY_TIMESTAMP);
+		g_game.stopDecay(this);
 	}
 
 	removeAttribute(ITEM_ATTRIBUTE_CORPSEOWNER);
@@ -269,6 +270,13 @@ void Item::setID(uint16_t newid)
 		} else if (!canDecay()) {
 			g_game.stopDecay(this);
 		}
+	}
+}
+
+void Item::setParent(Cylinder* cylinder) {
+	parent = cylinder;
+	if (parent == nullptr) {
+		g_game.stopDecay(this);
 	}
 }
 

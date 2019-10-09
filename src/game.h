@@ -71,8 +71,7 @@ enum LightState_t {
 };
 
 static constexpr int32_t EVENT_LIGHTINTERVAL = 10000;
-static constexpr int32_t EVENT_DECAYINTERVAL = 250;
-static constexpr int32_t EVENT_DECAY_BUCKETS = 4;
+static constexpr int32_t EVENT_DECAYINTERVAL = 50;
 
 /**
   * Main Game class.
@@ -453,6 +452,7 @@ class Game
 
 		void startDecay(Item* item);
 		void stopDecay(Item* item);
+		bool isDecaying(Item* item);
 		int32_t getLightHour() const {
 			return lightHour;
 		}
@@ -523,13 +523,10 @@ class Game
 
 		std::map<int64_t, std::map<Item *, Item *>> decayMap;
 		std::map<Item *, int64_t> reverseItemDecayMap;
-		std::list<Item*> decayItems[EVENT_DECAY_BUCKETS];
 		std::list<Creature*> checkCreatureLists[EVENT_CREATURECOUNT];
 
 		std::vector<Creature*> ToReleaseCreatures;
 		std::vector<Item*> ToReleaseItems;
-
-		size_t lastBucket = 0;
 
 		WildcardTreeNode wildcardTree { false };
 
