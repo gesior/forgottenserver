@@ -6655,7 +6655,7 @@ int LuaScriptInterface::luaItemDecay(lua_State* L)
 			it.decayTo = getNumber<int32_t>(L, 2);
 		}
 
-		g_game.startDecay(item);
+		item->startDecaying();
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -6668,7 +6668,7 @@ int LuaScriptInterface::luaItemStopDecay(lua_State* L)
 	// item:stopDecay()
 	Item* item = getUserdata<Item>(L, 1);
 	if (item) {
-		g_game.stopDecay(item);
+		item->stopDecaying();
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
